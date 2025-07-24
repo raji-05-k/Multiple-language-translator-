@@ -116,7 +116,7 @@ public class Translator {
             return result.split("\"translatedText\":\"")[1].split("\"")[0];
 
         } catch (Exception e) {
-            return "Error during translation: " + e.getMessage();
+            return "A Error during translation: " + e.getMessage();
         }
     }
 }
