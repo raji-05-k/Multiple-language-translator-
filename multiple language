@@ -1,0 +1,122 @@
+import java.io.*;
+import java.net.*;
+import java.util.*;
+
+public class Translator {
+
+    // Supported language codes (50+ examples)
+    static Map<String, String> languages = Map.ofEntries(
+        Map.entry("English", "en"),
+        Map.entry("Tamil", "ta"),
+        Map.entry("Hindi", "hi"),
+        Map.entry("Telugu", "te"),
+        Map.entry("Kannada", "kn"),
+        Map.entry("Malayalam", "ml"),
+        Map.entry("Marathi", "mr"),
+        Map.entry("Bengali", "bn"),
+        Map.entry("French", "fr"),
+        Map.entry("German", "de"),
+        Map.entry("Spanish", "es"),
+        Map.entry("Italian", "it"),
+        Map.entry("Russian", "ru"),
+        Map.entry("Arabic", "ar"),
+        Map.entry("Urdu", "ur"),
+        Map.entry("Chinese", "zh"),
+        Map.entry("Japanese", "ja"),
+        Map.entry("Korean", "ko"),
+        Map.entry("Portuguese", "pt"),
+        Map.entry("Greek", "el"),
+        Map.entry("Turkish", "tr"),
+        Map.entry("Ukrainian", "uk"),
+        Map.entry("Vietnamese", "vi"),
+        Map.entry("Polish", "pl"),
+        Map.entry("Hungarian", "hu"),
+        Map.entry("Czech", "cs"),
+        Map.entry("Dutch", "nl"),
+        Map.entry("Finnish", "fi"),
+        Map.entry("Hebrew", "he"),
+        Map.entry("Indonesian", "id"),
+        Map.entry("Swedish", "sv"),
+        Map.entry("Norwegian", "no"),
+        Map.entry("Thai", "th"),
+        Map.entry("Romanian", "ro"),
+        Map.entry("Slovak", "sk"),
+        Map.entry("Croatian", "hr"),
+        Map.entry("Serbian", "sr"),
+        Map.entry("Punjabi", "pa"),
+        Map.entry("Gujarati", "gu"),
+        Map.entry("Sinhala", "si"),
+        Map.entry("Nepali", "ne"),
+        Map.entry("Pashto", "ps"),
+        Map.entry("Armenian", "hy"),
+        Map.entry("Persian", "fa"),
+        Map.entry("Swahili", "sw"),
+        Map.entry("Zulu", "zu"),
+        Map.entry("Xhosa", "xh"),
+        Map.entry("Filipino", "tl"),
+        Map.entry("Esperanto", "eo")
+    );
+
+    public static void main(String[] args) throws IOException {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("Enter a sentence to translate:");
+        String inputText = sc.nextLine();
+
+        System.out.println("\nChoose a language to translate to:");
+        int index = 1;
+        List<String> languageNames = new ArrayList<>(languages.keySet());
+        for (String lang : languageNames) {
+            System.out.println(index++ + ". " + lang);
+        }
+
+        System.out.print("\nEnter your choice (1-" + languageNames.size() + "): ");
+        int choice = sc.nextInt();
+        sc.nextLine(); // Consume newline
+
+        if (choice < 1 || choice > languageNames.size()) {
+            System.out.println("Invalid choice.");
+            return;
+        }
+
+        String selectedLang = languageNames.get(choice - 1);
+        String targetLangCode = languages.get(selectedLang);
+
+        String translated = translateText(inputText, targetLangCode);
+        System.out.println("\n🔤 Translated into " + selectedLang + ":");
+        System.out.println(translated);
+    }
+
+    public static String translateText(String text, String targetLang) {
+        try {
+            URL url = new URL("https://libretranslate.de/translate");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.setDoOutput(true);
+
+            String data = "q=" + URLEncoder.encode(text, "UTF-8") +
+                          "&source=en&target=" + targetLang + "&format=text";
+
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(data.getBytes());
+            }
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            StringBuilder json = new StringBuilder();
+            String line;
+            while ((line = in.readLine()) != null) {
+                json.append(line);
+            }
+            in.close();
+
+            // Extract translated text from JSON
+            String result = json.toString();
+            return result.split("\"translatedText\":\"")[1].split("\"")[0];
+
+        } catch (Exception e) {
+            return "Error during translation: " + e.getMessage();
+        }
+    }
+}
